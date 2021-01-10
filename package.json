@@ -1,0 +1,10 @@
+{
+  "name": "store-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^26.0.20",
+    "jest": "^26.6.3"
+  }
+}
