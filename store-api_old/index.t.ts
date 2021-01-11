@@ -39,30 +39,37 @@ test("main", async () => {
 test("on", () => {
   const user = userApi({ name: "user-1" });
 
-  user.on.setName.before(({ params }) => {
+  user.use.setName.on.before(({ params }) => {
     const [name, hard] = params;
 
-    console.log("before", name, hard)
+    console.log("before", name, hard);
   });
-  user.on.setName.after(({ params, result }) => {
-    console.log("after", params, result)
+  user.use.setName.on.after(({ params, result }) => {
+    console.log("after", params, result);
   });
 });
 
 test("off", () => {
   const user = userApi({ name: "user-1" });
 
-  user.on.setAge.before(({ params }) => {
+  user.use.setAge.on.before(({ params }) => {
     const [name] = params;
 
     console.log("before", name);
   });
-  user.on.setAge.after(({ params, result }) => {
+  user.use.setAge.off.after(({ params, result }) => {
     result.then((value) => {
-      console.log(value)
-    })
+      console.log(value);
+    });
   });
 
-  user.off.setAge.before(({ params }) => {});
-  user.off.setAge.after(() => {});
+  user.use.setAge.off.before(({ params }) => {});
+  user.use.setAge.off.after(() => {});
+});
+
+test("listen.on", () => {
+  const user = userApi({ name: "user-1" });
+
+  user.listen.on(() => {});
+  user.listen.off((asdasd) => {});
 });

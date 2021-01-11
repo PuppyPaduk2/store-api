@@ -6,8 +6,12 @@ function storeApi(payload) {
   const api = { ...payload };
 
   return ({ name, init }) => {
-    if (context[name] && context[name].api !== api) {
-      throw new Error("Store use other api");
+    if (context[name]) {
+      if (context[name].api !== api) {
+        throw new Error("Store use other api");
+      } else {
+        return context[name].publicApi;
+      }
     } else if (context[name] === undefined) {
       context[name] = {
         api,
@@ -27,7 +31,10 @@ function storeApi(payload) {
     };
 
     const publicApi = { use: {}, on: {}, off: {} };
-    const listeners = {};
+    const listeners = {
+      use: {},
+      listen: new Set(),
+    };
 
     const apiWrapper = payload.api({ data, change });
     const apiKeys = Object.keys(apiWrapper);
@@ -35,41 +42,54 @@ function storeApi(payload) {
     for (let index = 0; index < apiKeys.length; index += 1) {
       const apiKey = apiKeys[index];
 
-      listeners[apiKey] = {
+      listeners.use[apiKey] = {
         before: new Set(),
         after: new Set(),
       };
 
-      publicApi.use[apiKey] = (...params) => {
-        listeners[apiKey].before.forEach((listener) => listener({ params }));
+      publicApi.use[apiKey] = function (...params) {
+        listeners.use[apiKey].before.forEach((listener) =>
+          listener({ params })
+        );
 
         const result = apiWrapper[apiKey](...params);
 
-        listeners[apiKey].after.forEach((listener) =>
+        listeners.use[apiKey].after.forEach((listener) =>
           listener({ params, result })
         );
 
         return result;
       };
 
-      publicApi.on[apiKey] = {
+      publicApi.use[apiKey].on = {
         before: (callback) => {
-          listeners[apiKey].before.add(callback);
+          listeners.use[apiKey].before.add(callback);
         },
         after: (callback) => {
-          listeners[apiKey].after.add(callback);
+          listeners.use[apiKey].after.add(callback);
         },
       };
 
-      publicApi.off[apiKey] = {
+      publicApi.use[apiKey].off = {
         before: (callback) => {
-          listeners[apiKey].before.delete(callback);
+          listeners.use[apiKey].before.delete(callback);
         },
         after: (callback) => {
-          listeners[apiKey].after.delete(callback);
+          listeners.use[apiKey].after.delete(callback);
+        },
+      };
+
+      publicApi.listen = {
+        on: (callback) => {
+          listeners.listen.add(callback);
+        },
+        off: (callback) => {
+          listeners.listen.delete(callback);
         },
       };
     }
+
+    context[name].publicApi = publicApi;
 
     return publicApi;
   };
