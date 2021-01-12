@@ -1,18 +1,18 @@
-const { createContext } = require("./index");
+const { contextStack, createContext } = require("./index");
 
 const context = createContext();
 
 const userApi = {
   init: { name: "", age: 0 },
-  api: (use) => ({
+  api: ({ getState, setState }) => ({
     setName: (name) => {
-      use.setState({ ...use.getState(), name });
-      return use.getState().name;
+      setState({ ...getState(), name });
+      return getState().name;
     },
-    getName: () => use.getState().name,
-    setAge: (age) => use.setState({ ...use.getState(), age }),
-    getAge: () => use.getState().age,
-    getData: () => use.getState(),
+    getName: () => getState().name,
+    setAge: (age) => setState({ ...getState(), age }),
+    getAge: () => getState().age,
+    getData: () => getState(),
   }),
 };
 
@@ -96,7 +96,7 @@ test("off", () => {
 });
 
 test("listen.on", () => {
-  const { use: user, ...$user } = context.addStore({
+  const { use: user, listen: $user } = context.addStore({
     name: "user-3",
     ...userApi,
   });
@@ -111,7 +111,7 @@ test("listen.on", () => {
 });
 
 test("listen.off", () => {
-  const { use: user, ...$user } = context.addStore({
+  const { use: user, listen: $user } = context.addStore({
     name: "user-3",
     ...userApi,
   });
@@ -122,4 +122,41 @@ test("listen.off", () => {
   user.setName("Bob");
 
   expect(fn.mock.calls.length).toBe(0);
+});
+
+const secondApp = createContext();
+
+test("two contexts", () => {
+  expect(contextStack.length).toBe(1);
+
+  context(() => {
+    expect(contextStack.length).toBe(2);
+    expect(contextStack[0]).toBe(context);
+  });
+
+  expect(contextStack.length).toBe(1);
+
+  secondApp(() => {
+    expect(contextStack.length).toBe(2);
+    expect(contextStack[0]).toBe(secondApp);
+  });
+
+  expect(contextStack.length).toBe(1);
+
+  context(() => {
+    expect(contextStack.length).toBe(2);
+    expect(contextStack[0]).toBe(context);
+  });
+
+  context(() => {
+    expect(contextStack.length).toBe(2);
+    expect(contextStack[0]).toBe(context);
+
+    secondApp(() => {
+      expect(contextStack.length).toBe(3);
+      expect(contextStack[0]).toBe(secondApp);
+    });
+  });
+
+  expect(contextStack.length).toBe(1);
 });

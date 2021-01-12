@@ -1,6 +1,6 @@
 import { store } from "./index";
 
-const user = store({
+const userApi = store({
   init: { name: "", age: 10 },
   api: () => ({
     setName: (name: string) => {},
@@ -11,6 +11,8 @@ const user = store({
     getAge: () => {},
   }),
 });
+
+const user = userApi({ name: "user" });
 
 user.setName("Bob");
 user.setAge(10).then(() => {});

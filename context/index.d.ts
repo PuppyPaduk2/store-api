@@ -48,12 +48,14 @@ export type StorePublicApi<State, Api extends ApiBase<State>> = {
       };
     };
   };
-  on: (callback: (state: State) => void) => void;
-  off: (callback: (state: State) => void) => void;
+  listen: {
+    on: (callback: (state: State) => void) => void;
+    off: (callback: (state: State) => void) => void;
+  };
 };
 
-export type Store<State, Api extends ApiBase<State>> = {
-  api: { init: State; api: Api };
+export type StoreInstance<State, Api extends ApiBase<State>> = {
+  config: Api;
   state: State;
   listeners: {
     subscribers: Set<(state: State) => void>;
@@ -74,14 +76,55 @@ export type Store<State, Api extends ApiBase<State>> = {
   publickApi: StorePublicApi<State, Api>;
 };
 
+export type ShapeStorePublicApi = {
+  [Key: string]: StorePublicApi<any, any>;
+};
+
+export type StorePublicApiState<T> = T extends StorePublicApi<infer U, any>
+  ? U
+  : T;
+
+export type ShapeStorePublicApiState<ShapeApi extends ShapeStorePublicApi> = {
+  [Key in keyof ShapeApi]: StorePublicApiState<ShapeApi[Key]>;
+};
+
+export type CombineInstance<ShapeApi extends ShapeStorePublicApi> = {
+  api: ShapeApi;
+  publicApi: CombinePublicApi<ShapeApi>;
+};
+
+export type CombinePublicApi<ShapeApi extends ShapeStorePublicApi> = {
+  use: {
+    [Key in keyof ShapeApi]: ShapeApi[Key];
+  };
+  listen: {
+    on: (callback: (state: ShapeStorePublicApiState<ShapeApi>) => void) => void;
+    off: (
+      callback: (state: ShapeStorePublicApiState<ShapeApi>) => void
+    ) => void;
+  };
+};
+
 export type Context = {
+  <Result = void>(callback: () => Result): Result;
+
+  // Private
   stores: Record<string, object>;
   addStore: <State, Api extends ApiBase<State>>(payload: {
     name: string;
-    api: StoreApi<State, Api>;
+    init: State;
+    api: Api;
   }) => StorePublicApi<State, Api>;
   setStoreState: (payload: { name: string; state: any }) => void;
   getStoreState: (payload: { name: string }) => any;
+
+  combinations: Record<string, CombineInstance<any>>;
+  addCombine: <ShapeApi extends ShapeStorePublicApi,  Api extends ApiBase<ShapeStorePublicApiState<ShapeApi>>(payload: {
+    name: string;
+    depends: ShapeApi;
+    init: ShapeStorePublicApiState<ShapeApi>;
+    api: Api;
+  }) => CombinePublicApi<ShapeApi>;
 };
 
 export function createContext(): Context;
