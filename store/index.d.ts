@@ -12,5 +12,5 @@ export type Store<State, Api extends ApiBase<State>> = (payload: {
 
 export function store<State, Api extends ApiBase<State>>(payload: {
   init: State;
-  ani: Api;
+  api: Api;
 }): Store<State, Api>;

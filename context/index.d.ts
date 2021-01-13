@@ -76,15 +76,15 @@ export type StoreInstance<State, Api extends ApiBase<State>> = {
   publickApi: StorePublicApi<State, Api>;
 };
 
-type ShapeStoreApi = {
+export type ShapeStoreApi = {
   [key: string]: StorePublicApi<any, any>;
 };
 
-type StorePublicApiState<T> = T extends StorePublicApi<infer U, any>
+export type StorePublicApiState<T> = T extends StorePublicApi<infer U, any>
   ? U
   : never;
 
-type UnionPublicApi<Depends extends ShapeStoreApi> = {
+export type UnionPublicApi<Depends extends ShapeStoreApi> = {
   name: string;
   depends: Depends;
   listen: {
@@ -108,7 +108,7 @@ type UnionPublicApi<Depends extends ShapeStoreApi> = {
   };
 };
 
-type UnionInstance<Depends extends ShapeStoreApi> = {
+export type UnionInstance<Depends extends ShapeStoreApi> = {
   depends: Depends;
   init: {
     [Key in keyof Depends]: StorePublicApiState<Depends[Key]>;

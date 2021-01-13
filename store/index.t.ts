@@ -23,3 +23,4 @@ user.setAge.on.after(({ result }) => {
 const $user = user();
 
 $user.on((value) => console.log(value));
+$user.getState();
