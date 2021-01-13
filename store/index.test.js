@@ -66,21 +66,3 @@ test("two context", () => {
   expect(app1Cache.user.getData()).toEqual({ name: "Alise", age: 10 });
   expect(app2Cache.user.getData()).toEqual({ name: "Bob", age: 1 });
 });
-
-const userName = store({
-  init: "",
-  api: ({ setState, getState }) => ({
-    change: (value) => setState(value),
-    getValue: () => getState(),
-  }),
-});
-
-const userAge = store({
-  init: 0,
-  api: ({ setState, getState }) => ({
-    change: (value) => setState(value),
-    getValue: () => getState(),
-  }),
-});
-
-test("combine stores", () => {});

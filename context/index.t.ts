@@ -9,12 +9,6 @@ const appStores = app(() => {
   };
 });
 
-const user = app.addStore({
-  name: "user",
-  init: { name: "", age: 0 },
-  api: () => ({}),
-});
-
 const userName = app.addStore({
   name: "user-name",
   init: "",
@@ -23,6 +17,8 @@ const userName = app.addStore({
     getValue: () => {},
   }),
 });
+
+userName.getState();
 
 const userAge = app.addStore({
   name: "user-age",
@@ -33,16 +29,14 @@ const userAge = app.addStore({
   }),
 });
 
-const userCombined = app.addCombine({
-  name: "user-combined",
-  init: { name: "", age: 0 },
+userAge.getState();
+
+const user = app.addUnion({
+  name: "user",
   depends: { name: userName, age: userAge },
-  api: () => ({}),
 });
 
-userCombined.use.name.use.setValue("Bob");
-userCombined.use.age.use.setValue(10);
-
-userCombined.listen.on((value) => {
-  console.log(value);
-});
+user.depends.name.use.setValue("Bob");
+user.depends.age.use.setValue(10);
+user.listen.on((value) => {});
+user.getState();

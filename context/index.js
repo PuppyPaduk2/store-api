@@ -13,6 +13,8 @@ function createContext() {
 
   context.stores = {};
 
+  context.unions = {};
+
   context.addStore = (payload) => {
     if (context.stores[payload.name]) {
       if (context.stores[payload.name].api !== payload.api) {
@@ -25,6 +27,7 @@ function createContext() {
     if (context.stores[payload.name] === undefined) {
       context.stores[payload.name] = {
         api: payload.api,
+        init: payload.init,
         state: payload.init,
       };
     }
@@ -36,8 +39,12 @@ function createContext() {
 
     context.stores[payload.name].listeners = listeners;
 
-    // Private scope api methods
+    const getState = () => {
+      return context.getStoreState({ name: payload.name });
+    };
+
     const publicApi = {
+      name: payload.name,
       use: {},
       listen: {
         on: (callback) => {
@@ -47,12 +54,11 @@ function createContext() {
           listeners.subscribers.delete(callback);
         },
       },
+      getState,
     };
 
     const wrapperApi = payload.api({
-      getState: () => {
-        return context.getStoreState({ name: payload.name });
-      },
+      getState,
       setState: (state) => {
         context.setStoreState({ name: payload.name, state });
       },
@@ -127,22 +133,78 @@ function createContext() {
     return store.state;
   };
 
-  context.addCombine = (payload) => {
-    if (context.combinations[payload.name]) {
-      if (context.combinations[payload.name].api !== payload.api) {
-        throw new Error("Combine use other api");
+  context.addUnion = (payload) => {
+    if (context.unions[payload.name]) {
+      if (context.unions[payload.name].api !== payload.api) {
+        throw new Error("Union use other api");
       } else {
-        return context.combinations[payload.name].publicApi;
+        return context.unions[payload.name].publicApi;
       }
     }
 
-    if (context.combinations[payload.name] === undefined) {
-      context.combinations[payload.name] = {
-        api: payload.api,
-      };
+    const listeners = {
+      subscribers: new Set(),
+    };
+
+    context.unions[payload.name] = {
+      depends: payload.depends,
+      init: payload.init,
+      listeners,
+    };
+
+    const publicApi = {
+      name: payload.name,
+      depends: payload.depends,
+      listen: {
+        on: (callback) => {
+          listeners.subscribers.add(callback);
+        },
+        off: (callback) => {
+          listeners.subscribers.delete(callback);
+        },
+      },
+      getState: () => {
+        return context.getUnionState({ name: payload.name });
+      },
+    };
+
+    const dependKeys = Object.keys(payload.depends);
+
+    for (let index = 0; index < dependKeys.length; index += 1) {
+      const dependKey = dependKeys[index];
+      const depend = payload.depends[dependKey];
+
+      depend.listen.on(() => {
+        const unionState = publicApi.getState();
+
+        context.unions[payload.name].listeners.subscribers.forEach((listener) =>
+          listener(unionState)
+        );
+      });
     }
 
-    const apiKeys = Object.keys(payload.api);
+    context.unions[payload.name].publicApi = publicApi;
+
+    return publicApi;
+  };
+
+  context.getUnionState = (payload) => {
+    const union = context.unions[payload.name];
+
+    if (union === undefined) {
+      throw new Error("Union doesn't exist");
+    }
+
+    const keys = Object.keys(union.depends);
+    const result = {};
+
+    for (let index = 0; index < keys.length; index += 1) {
+      const key = keys[index];
+
+      result[key] = union.depends[key].getState();
+    }
+
+    return result;
   };
 
   return context;

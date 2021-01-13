@@ -160,3 +160,66 @@ test("two contexts", () => {
 
   expect(contextStack.length).toBe(1);
 });
+
+test("getState", () => {
+  const user = context.addStore({ name: "user-get-state", ...userApi });
+
+  expect(user.getState()).toEqual({ name: "", age: 0 });
+
+  user.use.setName("Bob");
+  user.use.setAge(20);
+
+  expect(user.getState()).toEqual({ name: "Bob", age: 20 });
+});
+
+describe("union", () => {
+  const app = createContext();
+
+  const userName = app.addStore({
+    name: "user-name",
+    init: "",
+    api: ({ getState, setState }) => ({
+      setValue: setState,
+      getValue: getState,
+    }),
+  });
+
+  const userAge = app.addStore({
+    name: "user-age",
+    init: 0,
+    api: ({ getState, setState }) => ({
+      setValue: setState,
+      getValue: getState,
+    }),
+  });
+
+  const user = app.addUnion({
+    name: "user",
+    depends: { name: userName, age: userAge },
+  });
+
+  test("main", () => {
+    expect(user.getState()).toEqual({ name: "", age: 0 });
+
+    user.depends.name.use.setValue("Bob");
+    user.depends.age.use.setValue(10);
+
+    expect(user.getState()).toEqual({ name: "Bob", age: 10 });
+  });
+
+  test("listen", () => {
+    const fn = jest.fn(() => {});
+
+    user.listen.on(fn);
+
+    user.depends.name.use.setValue("Alise");
+
+    expect(fn.mock.calls.length).toBe(1);
+
+    user.listen.off(fn);
+
+    user.depends.name.use.setValue("Jack");
+
+    expect(fn.mock.calls.length).toBe(1);
+  });
+});
