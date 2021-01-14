@@ -125,11 +125,41 @@ function createContext() {
 
     union: (payload) => {
       if (context.unions[payload.name]) {
-        if (context.unions[payload.name].depends !== payload.depends) {
-          throw new Error("Union use other api");
-        } else {
-          return context.unions[payload.name].public;
+        const unionDepends = context.unions[payload.name].depends;
+        const unionDependKeys = Object.keys(unionDepends);
+
+        const payloadDepends = payload.depends;
+        const payloadDependKeys = Object.keys(payloadDepends);
+
+        if (unionDependKeys.length === payloadDependKeys.length) {
+          const isEqual = true;
+
+          while (unionDependKeys.length) {
+            const dependKey = unionDependKeys.pop();
+
+            if (payloadDependKeys.includes(dependKey)) {
+              payloadDependKeys.splice(payloadDependKeys.indexOf(dependKey), 1);
+            }
+
+            const unionDepend = unionDepends[dependKey];
+            const payloadDepend = unionDepends[dependKey];
+
+            if (unionDepend !== payloadDepend) {
+              isEqual = false;
+              break;
+            }
+          }
+
+          if (
+            isEqual &&
+            unionDependKeys.length === 0 &&
+            payloadDependKeys.length === 0
+          ) {
+            return context.unions[payload.name].public;
+          }
         }
+
+        throw new Error("Union use other api");
       }
 
       const listeners = {
@@ -138,13 +168,11 @@ function createContext() {
       const publicApi = {
         name: payload.name,
         depends: payload.depends,
-        listen: {
-          on: (callback) => {
-            listeners.store.add(callback);
-          },
-          off: (callback) => {
-            listeners.store.delete(callback);
-          },
+        on: (callback) => {
+          listeners.store.add(callback);
+        },
+        off: (callback) => {
+          listeners.store.delete(callback);
         },
         getState: () => {
           return context.getUnionState({ name: payload.name });
