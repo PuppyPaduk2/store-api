@@ -1,7 +1,7 @@
 import { StorePublicState, UnionPublic } from "../core/context";
 import { Store } from "../store";
 
-export type Union<
+export type UnionCreator<
   Depends extends { [key: string]: Store<any, any> }
 > = (payload: {
   name: string;
@@ -16,4 +16,4 @@ export type Union<
 
 export function union<
   Depends extends { [key: string]: Store<any, any> }
->(payload: { depends: Depends }): Union<Depends>;
+>(payload: { depends: Depends }): UnionCreator<Depends>;
