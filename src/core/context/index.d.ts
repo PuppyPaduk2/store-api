@@ -5,6 +5,7 @@ export type Method<Params extends Array<any>, Result = void> = (
 export type StoreApi<State> = (payload: {
   getState: () => State;
   setState: (payload: State | ((prev: State) => State)) => State;
+  reset: () => State;
 }) => {
   [Key: string]: Method<any, any>;
 };

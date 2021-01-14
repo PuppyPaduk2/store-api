@@ -34,6 +34,9 @@ function createContext() {
         context.setStoreState({ name: payload.name, state });
         return state;
       };
+      const reset = () => {
+        return setState(payload.init);
+      };
       const publicApi = {
         api: {},
         on: (callback) => {
@@ -53,7 +56,7 @@ function createContext() {
         public: publicApi,
       };
 
-      const methods = payload.api({ getState, setState });
+      const methods = payload.api({ getState, setState, reset });
       const methodKeys = Object.keys(methods);
 
       for (let index = 0; index < methodKeys.length; index += 1) {
