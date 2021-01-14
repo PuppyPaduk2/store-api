@@ -1,5 +1,5 @@
 const { context } = require("./index");
-const { contextStack } = require("../../core/context");
+const { contextStack } = require("../core/context");
 
 const app1 = context();
 const app2 = context();

@@ -1,4 +1,4 @@
-const { createContext, contextStack } = require("../../core/context");
+const { createContext, contextStack } = require("../core/context");
 
 function context() {
   const context = createContext();
