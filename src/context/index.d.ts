@@ -1,6 +1,8 @@
 import { Context } from "../core/context";
 
-export function context(): <Result = void>(callback: () => Result) => Result;
+type ContextScope = <Result = void>(callback: () => Result) => Result;
+
+export function context(): ContextScope;
 
 export function getContextState(
   contextScope: Context["scope"]
