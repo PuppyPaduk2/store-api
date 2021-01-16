@@ -10,6 +10,10 @@ function context() {
   return contextScope;
 }
 
+function getRootContextScope() {
+  return contextStack[0].scope;
+}
+
 function getContextState(contextScope) {
   const scope = contextScope || contextStack[0].scope;
   let state = {
@@ -42,4 +46,4 @@ function getContextState(contextScope) {
   return state;
 }
 
-module.exports = { context, getContextState };
+module.exports = { context, getRootContextScope, getContextState };

@@ -4,6 +4,8 @@ type ContextScope = <Result = void>(callback: () => Result) => Result;
 
 export function context(): ContextScope;
 
+export function getRootContextScope(): ContextScope;
+
 export function getContextState(
   contextScope: Context["scope"]
 ): {
