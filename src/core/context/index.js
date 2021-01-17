@@ -31,7 +31,11 @@ function createContext() {
         return context.getStoreState({ name: payload.name });
       };
       const setState = (state) => {
-        context.setStoreState({ name: payload.name, state });
+        if (typeof state === "function") {
+          context.setStoreState({ name: payload.name, state: state(getState()) });
+        } else {
+          context.setStoreState({ name: payload.name, state });
+        }
         return state;
       };
       const reset = () => {

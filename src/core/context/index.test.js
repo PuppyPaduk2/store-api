@@ -17,3 +17,22 @@ test("reset store", () => {
   user.api.reset.call();
   expect(user.getState()).toEqual({ name: "", age: 0 });
 });
+
+test("change by prev", () => {
+  const app = createContext();
+  const num = app.store({
+    name: "num",
+    init: 0,
+    api: ({ setState }) => ({
+      inc: () => setState((prev) => prev + 1),
+      dec: () => setState((prev) => prev - 1),
+    }),
+  });
+
+  expect(num.getState()).toBe(0);
+  num.api.inc.call();
+  expect(num.getState()).toBe(1);
+  num.api.dec.call();
+  num.api.dec.call();
+  expect(num.getState()).toBe(-1);
+});
