@@ -1,4 +1,4 @@
-import { Context } from "../core/context";
+import { Context, SerializedContext } from "../core/context";
 
 type ContextScope = <Result = void>(callback: () => Result) => Result;
 
@@ -16,3 +16,10 @@ export function getContextState(
     [Key in keyof Context["unions"]]: Context["unions"][Key]["public"];
   };
 };
+
+export function serializeContext(contextScope?: ContextScope): SerializedContext;
+
+export function desrializeContext(
+  serializedContext: SerializedContext,
+  constexScope?: ContextScope
+): void

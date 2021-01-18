@@ -1,6 +1,6 @@
 const contextStack = [];
 
-function createContext() {
+function createContext(payload) {
   const context = {
     scope: (callback) => {
       contextStack.unshift(context);
@@ -12,10 +12,37 @@ function createContext() {
       return result;
     },
 
+    serialize: () => {
+      const result = { stores: {} };
+
+      const storeKeys = Object.keys(context.stores);
+
+      for (let index = 0; index < storeKeys.length; index += 1) {
+        const storeKey = storeKeys[index];
+        const store = context.stores[storeKey];
+
+        result.stores[storeKey] = store.state;
+      }
+
+      return result;
+    },
+
+    deserialize: (payload) => {
+      const storeKeys = Object.keys(payload.stores);
+
+      for (let index = 0; index < storeKeys.length; index += 1) {
+        const storeKey = storeKeys[index];
+
+        context.stores[storeKey] = {
+          state: payload.stores[storeKey],
+        };
+      }
+    },
+
     stores: {},
 
     store: (payload) => {
-      if (context.stores[payload.name]) {
+      if (context.stores[payload.name] && context.stores[payload.name].api) {
         if (context.stores[payload.name].api !== payload.api) {
           throw new Error("Store use other api");
         } else {
@@ -32,7 +59,10 @@ function createContext() {
       };
       const setState = (state) => {
         if (typeof state === "function") {
-          context.setStoreState({ name: payload.name, state: state(getState()) });
+          context.setStoreState({
+            name: payload.name,
+            state: state(getState()),
+          });
         } else {
           context.setStoreState({ name: payload.name, state });
         }
@@ -54,7 +84,9 @@ function createContext() {
 
       context.stores[payload.name] = {
         init: payload.init,
-        state: payload.init,
+        state: context.stores[payload.name]
+          ? context.stores[payload.name].state || payload.init
+          : payload.init,
         api: payload.api,
         listeners,
         public: publicApi,

@@ -105,8 +105,12 @@ export type UnionPublic<
   };
 };
 
+export type SerializedContext = { stores: { [key: string]: any } };
+
 export type Context = {
   scope: <Result = void>(callback: () => Result) => Result;
+  serialize: () => SerializedContext;
+  deserialize: (payload: SerializedContext) => void;
 
   stores: Record<string, Store<any, any>>;
   store: <State, Api extends StoreApi<State>>(payload: {
