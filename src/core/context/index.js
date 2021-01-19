@@ -1,6 +1,6 @@
 const contextStack = [];
 
-function createContext(payload) {
+function createContext() {
   const context = {
     scope: (callback) => {
       contextStack.unshift(context);

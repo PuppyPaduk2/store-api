@@ -1,7 +1,7 @@
 const { createContext, contextStack } = require("../core/context");
 
-function context(payload) {
-  const context = createContext(payload);
+function context() {
+  const context = createContext();
 
   function contextScope(callback) {
     return context.scope(callback);
