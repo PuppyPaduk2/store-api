@@ -85,7 +85,9 @@ function createContext() {
       context.stores[payload.name] = {
         init: payload.init,
         state: context.stores[payload.name]
-          ? context.stores[payload.name].state || payload.init
+          ? context.stores[payload.name].state === undefined
+            ? payload.init
+            : context.stores[payload.name].state
           : payload.init,
         api: payload.api,
         listeners,
