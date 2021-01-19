@@ -10,7 +10,7 @@ export {
   getRootContextScope,
   ContextScope,
   serializeContext,
-  desrializeContext,
+  deserializeContext,
 } from "./context";
 export { store, StoreCreator } from "./store";
 export { union, UnionCreator } from "./union";
