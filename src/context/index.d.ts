@@ -19,7 +19,7 @@ export function getContextState(
 
 export function serializeContext(contextScope?: ContextScope): SerializedContext;
 
-export function desrializeContext(
+export function deserializeContext(
   serializedContext: SerializedContext,
   constexScope?: ContextScope
 ): void

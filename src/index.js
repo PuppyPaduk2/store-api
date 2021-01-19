@@ -1,4 +1,10 @@
-const { context, getRootContextScope, getContextState, serializeContext, desrializeContext } = require("./context");
+const {
+  context,
+  getRootContextScope,
+  getContextState,
+  serializeContext,
+  deserializeContext,
+} = require("./context");
 const { store } = require("./store");
 const { union } = require("./union");
 
@@ -7,7 +13,7 @@ module.exports = {
   getRootContextScope,
   getContextState,
   serializeContext,
-  desrializeContext,
+  deserializeContext,
   store,
   union,
 };
