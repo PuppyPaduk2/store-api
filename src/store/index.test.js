@@ -76,3 +76,16 @@ describe("serialize / deserialize", () => {
     });
   });
 });
+
+test("default init", () => {
+  const app = context();
+  const count = app(() => store({
+    init: -1,
+    api: ({ setState }) => ({
+      inc: () => setState(prev => prev + 1),
+      dec: () => setState(prev => prev - 1),
+    }),
+  })({ name: "count", init: 0 }))
+
+  expect(count.getState()).toBe(0);
+});

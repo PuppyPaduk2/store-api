@@ -6,7 +6,7 @@ function store(config) {
 
     return context.store({
       name: payload.name,
-      init: payload.init ? payload.init : config.init,
+      init: payload.init === undefined ? config.init : payload.init,
       api: config.api,
     });
   }
