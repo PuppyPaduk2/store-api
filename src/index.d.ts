@@ -4,6 +4,13 @@ export {
   StorePublicState as StoreState,
   UnionPublic as Union,
 } from "./core/context";
-export { context, getContextState, getRootContextScope, ContextScope } from "./context";
+export {
+  context,
+  getContextState,
+  getRootContextScope,
+  ContextScope,
+  serializeContext,
+  desrializeContext,
+} from "./context";
 export { store, StoreCreator } from "./store";
 export { union, UnionCreator } from "./union";
