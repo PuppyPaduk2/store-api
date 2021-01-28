@@ -1,7 +1,7 @@
 {
   "name": "store-api",
-  "version": "1.0.0",
-  "main": "./src",
+  "version": "0.1.0",
+  "main": "./src/v9",
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "^26.0.20",
