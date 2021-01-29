@@ -16,4 +16,5 @@ export {
 export {
   store,
   StoreInstance,
+  ConfigApi,
 } from "./store";
