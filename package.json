@@ -1,7 +1,7 @@
 {
   "name": "store-api",
   "version": "0.2.0",
-  "main": "./src/v9",
+  "main": "./src",
   "license": "MIT",
   "scripts": {
     "test": "jest --watch"
