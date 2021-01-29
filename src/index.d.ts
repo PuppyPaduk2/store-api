@@ -15,4 +15,5 @@ export {
 } from "./depend";
 export {
   store,
+  StoreInstance,
 } from "./store";
