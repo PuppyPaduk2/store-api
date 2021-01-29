@@ -44,25 +44,26 @@ function contract(stores, options) {
     }
   }
 
-  instance.stores = (contextScope, storeNames) => {
+  instance.stores = (_payload) => () => {
+    const payload = _payload || {};
+    const use = payload.use || Object.keys(instance.store);
+    const state = payload.state || {};
     const result = {};
 
-    (contextScope || rootContext)(() => {
-      (storeNames || Object.keys(instance.store)).forEach((name) => {
-        result[name] = instance.store[name]();
-      });
+    use.forEach((name) => {
+      result[name] = instance.store[name](state[name]);
     });
 
     return result;
   };
 
-  instance.depends = (contextScope, dependNames) => {
+  instance.depends = (_payload) => () => {
+    const payload = _payload || {};
+    const use = payload.use || Object.keys(instance.depend)
     const result = {};
 
-    (contextScope || rootContext)(() => {
-      (dependNames || Object.keys(instance.depend)).forEach((name) => {
-        result[name] = instance.depend[name]();
-      });
+    use.forEach((name) => {
+      result[name] = instance.depend[name]();
     });
 
     return result;

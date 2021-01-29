@@ -57,10 +57,16 @@ appContract.depend.defaultToken();
 
 const app = context();
 
-const rootStoresAll = appContract.stores();
-const rootStoresChunk = appContract.stores(rootContext, ["name"]);
-const appStoresAll = appContract.stores(app);
-const appStoresChunk = appContract.stores(app, ["age", "token"]);
+const rootStoresAll = appContract.stores({
+  state: { name: "", age: 123, token: "" },
+})();
+const rootStoresChunk = rootContext(appContract.stores({
+  use: ["name"],
+}));
+const appStoresAll = app(appContract.stores());
+const appStoresChunk = app(appContract.stores({
+  use: ["age", "token"]
+}));
 
 rootStoresAll.age.getState();
 rootStoresAll.name.getState();
@@ -75,10 +81,14 @@ appStoresAll.token.getState();
 appStoresChunk.age.getState();
 appStoresChunk.token.getState();
 
-const rootDependAll = appContract.depends();
-const rootDependChunk = appContract.depends(rootContext, ["defaultName", "defaultToken"]);
-const appDependAll = appContract.depends(app);
-const appDependChunk = appContract.depends(app, ["defaultAge"]);
+const rootDependAll = appContract.depends()();
+const rootDependChunk = rootContext(appContract.depends({
+  use: ["defaultName", "defaultToken"]
+}));
+const appDependAll = app(appContract.depends());
+const appDependChunk = app(appContract.depends({
+  use: ["defaultAge"],
+}));
 
 rootDependAll.defaultAge.then((result) => {});
 rootDependAll.defaultName.then((result) => {});

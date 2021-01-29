@@ -113,8 +113,8 @@ test("stores [all]", () => {
   const app = context();
   const innerApp = context();
 
-  const appStores = capp.stores(app);
-  const innerAppStores = capp.stores(innerApp);
+  const appStores = app(capp.stores());
+  const innerAppStores = innerApp(capp.stores());
 
   expect(appStores.name.getState()).toBe("");
   expect(innerAppStores.name.getState()).toBe("");
@@ -132,7 +132,9 @@ test("stores [chunk]", () => {
 
   const app = context();
 
-  expect(Object.keys(capp.stores(app, ["name"]))).toEqual(["name"]);
+  expect(Object.keys(app(capp.stores({
+    use: ["name"]
+  })))).toEqual(["name"]);
 });
 
 test("depends [all]", async () => {
@@ -153,8 +155,8 @@ test("depends [all]", async () => {
   });
 
   const app = context();
-  const { defaultName, defaultAge } = capp.depends(app);
-  const stores = capp.stores(app);
+  const { defaultName, defaultAge } = app(capp.depends());
+  const stores = app(capp.stores());
 
   expect(stores.name.getState()).toBe("Bob");
   expect(stores.age.getState()).toBe(10);
@@ -180,8 +182,10 @@ test("depends [chunk]", async () => {
   });
 
   const app = context();
-  const { defaultName } = capp.depends(app, ["defaultName"]);
-  const stores = capp.stores(app);
+  const { defaultName } = app(capp.depends({
+    use: ["defaultName"]
+  }));
+  const stores = app(capp.stores());
 
   expect(stores.name.getState()).toBe("Bob");
   expect(stores.age.getState()).toBe(0);

@@ -39,7 +39,12 @@ export function contract<
   };
   stores: <
     StoreNames extends keyof Stores = keyof Stores
-  >(contextScope?: ContextScope, stores?: StoreNames[]) => {
+  >(payload?: {
+    use?: StoreNames[];
+    state?: {
+      [Key in StoreNames]?: StoreApiState<Stores[Key]>;
+    };
+  }) => () => {
     [Key in StoreNames]: StoreInstance<
       StoreApiState<Stores[Key]>,
       StoreApiApi<Stores[Key]>
@@ -47,7 +52,9 @@ export function contract<
   };
   depends: <
     DependNames extends keyof ReturnType<Depends> = keyof ReturnType<Depends>
-  >(contextScope?: ContextScope, depends?: DependNames[]) => {
+  >(payload?: {
+    use?: DependNames[];
+  }) => () => {
     [Key in DependNames]: Promise<DependApiHandlerResult<ReturnType<Depends>[Key]>>;
   };
 };
