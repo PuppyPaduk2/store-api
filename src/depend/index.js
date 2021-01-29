@@ -1,5 +1,5 @@
-function depend({ stores, handler }) {
-  const config = { stores, handler };
+function depend({ stores, handler, name }) {
+  const config = { stores, handler, name };
 
   Object.freeze(config);
 

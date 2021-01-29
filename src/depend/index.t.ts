@@ -31,6 +31,7 @@ const defaultAge = depend({
   handler: ({ age }) => {
     age.api.set(10);
   },
+  name: "default-age",
 });
 
 const defaultNameStore = defaultName(({ stores }) => stores.name);

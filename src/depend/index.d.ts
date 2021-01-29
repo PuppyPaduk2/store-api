@@ -17,6 +17,7 @@ export type DependConfig<Stores extends StoreShape, Result = void> = {
       StoreApiApi<Stores[Key]>
     >;
   }) => Result;
+  name?: string;
 };
 
 export type DependApi<

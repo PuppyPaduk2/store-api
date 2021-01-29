@@ -25,9 +25,14 @@ export function attachDepend<
   HandlerResult = void
 >(dependApi: DependApi<Stores, HandlerResult>): Promise<HandlerResult>;
 
-export type SerializedContext = { stores: { [key: string]: any } };
+export type SerializedContext = {
+  stores: { [key: string]: any },
+  depends: { [key: string]: any },
+};
 
-export function serializeContext(contextScope?: ContextScope): SerializedContext;
+export function serializeContext(
+  contextScope?: ContextScope
+): SerializedContext;
 
 export function deserializeContext(payload: {
   context?: ContextScope,

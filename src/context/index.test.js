@@ -38,6 +38,7 @@ const defaultValuesBob = depend({
     age.api.set(10);
     return name.getState();
   },
+  name: "default-values-bob",
 });
 
 const incAge = depend({
@@ -51,8 +52,21 @@ const incAge = depend({
 const defaultValuesAlise = depend({
   stores: dependStores,
   handler: ({ name, age }) => {
-    name.api.set("Alise");
+    if (name.getState() === "Alise") {
+      name.api.set("Alise-next");
+    } else {
+      name.api.set("Alise");
+    }
     age.api.set(1);
+    return name.getState();
+  },
+  name: "default-values-alise",
+});
+
+const defaultToken = depend({
+  stores: { token: stringApi },
+  handler: ({ token }) => {
+    token.api.set("123qwe");
   },
 });
 
@@ -218,25 +232,68 @@ test("result attached depend", async () => {
   });
 });
 
-test("serializeContext", () => {
+test("serializeContext", async () => {
   const app = context();
 
-  expect(serializeContext(app)).toEqual({ stores: {} });
+  expect(await serializeContext(app)).toEqual({ stores: {}, depends: {} });
   expect(app(() => attachStore("name", stringApi, "Bob").getState())).toBe("Bob");
-  expect(serializeContext(app)).toEqual({ stores: { name: "Bob" } });
+  expect(await serializeContext(app)).toEqual({ stores: { name: "Bob" }, depends: {} });
   expect(app(() => attachStore("age", numberApi, 10).getState())).toBe(10);
-  expect(serializeContext(app)).toEqual({ stores: { name: "Bob", age: 10 } });
+  expect(await serializeContext(app)).toEqual({ stores: { name: "Bob", age: 10 }, depends: {} });
 });
 
-test("deserializeContext", () => {
+test("serializeContext [with depends]", async () => {
+  const app = context();
+
+  app(() => {
+    attachDepend(defaultValuesBob);
+    attachDepend(incAge);
+    attachDepend(defaultToken);
+
+    expect(attachStore("name", stringApi).getState()).toBe("Bob");
+    expect(attachStore("age", numberApi).getState()).toBe(12);
+  });
+
+  expect(await serializeContext(app)).toEqual({
+    stores: { name: 'Bob', age: 12 },
+    depends: { 'default-values-bob': 'Bob' },
+  });
+});
+
+test("deserializeContext", async () => {
   const appServer = context();
 
   appServer(() => attachStore("name", stringApi, "Alise"));
 
   const appClient = deserializeContext({
     context: context(),
-    data: serializeContext(appServer),
+    data: await serializeContext(appServer),
   });
 
   expect(appClient(() => attachStore("name", stringApi, "Bob").getState())).toBe("Alise");
+});
+
+test("deserializeContext [with depends]", async () => {
+  const appServer = context();
+
+  appServer(() => {
+    attachDepend(defaultValuesAlise);
+    attachDepend(incAge);
+    attachDepend(defaultToken);
+
+    attachStore("name", stringApi);
+  });
+
+  const appClient = deserializeContext({
+    context: context(),
+    data: await serializeContext(appServer),
+  });
+
+  appClient(() => {
+    attachDepend(defaultValuesAlise);
+    attachDepend(incAge);
+    attachDepend(defaultToken);
+
+    expect(attachStore("name", stringApi).getState()).toBe("Alise");
+  });
 });

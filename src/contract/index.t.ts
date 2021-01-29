@@ -37,6 +37,7 @@ const appContract = contract({
       handler: ({ age }) => {
         return age.api.set(10);
       },
+      useName: true,
     }),
     defaultToken: depend({
       stores: ["token"],

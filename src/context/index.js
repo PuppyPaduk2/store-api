@@ -23,6 +23,7 @@ function createContext() {
   const instance = {
     storeStates: new Map(),
     stores: new Map(),
+    dependStates: new Map(),
     depends: new Map(),
     storeStack: [],
     queueDependHandlers: [],
@@ -142,6 +143,7 @@ function attachStore(name, storeApi, state) {
 
   if (store === undefined) {
     const storeState = currentContext.storeStates.get(name);
+
     store = storeApi((config) => createStore({
       init: config.init,
       api: config.api,
@@ -188,7 +190,7 @@ function attachStore(name, storeApi, state) {
   throw new Error("Store in current context uses other api");
 }
 
-function createDepend({ handler }) {
+function createDepend({ handler, name, state }) {
   let handlerResolve, handlerReject;
   const handlerResult = new Promise((resolve, reject) => {
     handlerResolve = resolve;
@@ -204,10 +206,11 @@ function createDepend({ handler }) {
     }
   };
   const instance = {
-    used: false,
+    used: state === undefined ? false : true,
     handler: handlerWrapper,
-    handlerResult,
+    handlerResult: state === undefined ? handlerResult : Promise.resolve(state),
     originApi: null,
+    name: name || null,
   };
 
   return instance;
@@ -215,11 +218,17 @@ function createDepend({ handler }) {
 
 function attachDepend(dependApi) {
   const currentContext = getStack().current;
-  const { stores } = dependApi((config) => config);
+  const { stores, name } = dependApi((config) => config);
   let depend = currentContext.depends.get(stores);
 
   if (depend === undefined) {
-    depend = dependApi(createDepend);
+    const dependState = currentContext.dependStates.get(name);
+
+    depend = dependApi((config) => createDepend({
+      handler: config.handler,
+      name: config.name,
+      state: dependState,
+    }));
     depend.originApi = dependApi;
     currentContext.depends.set(stores, depend);
   }
@@ -231,17 +240,27 @@ function attachDepend(dependApi) {
   throw new Error("Depend in current context uses other api");
 }
 
-function serializeContext(contextScope) {
+async function serializeContext(contextScope) {
   const data = {
     stores: {},
+    depends: {},
   };
 
-  contextScope(() => {
-    const { stores } = getStack().current;
+  await contextScope(async () => {
+    const currentContext = getStack().current;
 
-    stores.forEach((store, key) => {
+    currentContext.stores.forEach((store, key) => {
       data.stores[key] = store.state;
     });
+
+    const filteredDepends = Array.from(currentContext.depends.values())
+      .filter(({ name, used }) => Boolean(name) && used);
+
+    for (let index = 0; index < filteredDepends.length; index += 1) {
+      const depend = filteredDepends[index];
+
+      data.depends[depend.name] = await depend.handlerResult;
+    }
   });
 
   return data;
@@ -256,6 +275,14 @@ function deserializeContext({ context, data }) {
       const dataStoreKey = dataStoreKeys[index];
 
       currentContext.storeStates.set(dataStoreKey, data.stores[dataStoreKey]);
+    }
+
+    const dataDependKeys = Object.keys(data.depends);
+
+    for (let index = 0; index < dataDependKeys.length; index += 1) {
+      const dataDependKey = dataDependKeys[index];
+
+      currentContext.dependStates.set(dataDependKey, data.depends[dataDependKey]);
     }
   });
 

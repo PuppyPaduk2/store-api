@@ -1,4 +1,8 @@
-const { context } = require("../context");
+const {
+  context,
+  serializeContext,
+  deserializeContext,
+} = require("../context");
 const { store } = require("../store");
 const { contract } = require("../contract");
 
@@ -190,4 +194,64 @@ test("depends [chunk]", async () => {
   expect(stores.name.getState()).toBe("Bob");
   expect(stores.age.getState()).toBe(0);
   expect(await defaultName).toBe("Bob");
+});
+
+test("serialize / deserialize context", async () => {
+  const capp = contract({
+    name: stringApi,
+    age: numberApi,
+  }, {
+    depends: (depend) => ({
+      defaultName: depend({
+        stores: ["name"],
+        handler: ({ name }) => {
+          if (name.getState() === "Bob") {
+            name.api.set("Bob-next");
+          } else {
+            name.api.set("Bob");
+          }
+
+          return name.getState();
+        },
+        useName: true,
+      }),
+      defaultAge: depend({
+        stores: ["age"],
+        handler: ({ age }) => {
+          if (age.getState() === 10) {
+            age.api.set(100);
+          } else {
+            age.api.set(10);
+          }
+
+          return age.getState();
+        },
+      }),
+    }),
+  });
+
+  const serverApp = context();
+
+  serverApp(() => {
+    capp.depends()();
+
+    const { name, age } = capp.stores()();
+
+    name.api.set("Bob");
+    age.api.set(10);
+  });
+
+  const clientApp = deserializeContext({
+    context: context(),
+    data: await serializeContext(serverApp),
+  });
+
+  clientApp(() => {
+    capp.depends()();
+
+    const { name, age } = capp.stores()();
+
+    expect(name.getState()).toBe("Bob");
+    expect(age.getState()).toBe(100);
+  });
 });

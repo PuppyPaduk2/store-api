@@ -1,4 +1,4 @@
-const { attachStore, attachDepend, rootContext } = require("../context");
+const { attachStore, attachDepend } = require("../context");
 const { depend } = require("../depend");
 
 function contract(stores, options) {
@@ -20,26 +20,32 @@ function contract(stores, options) {
   }
 
   if (options && typeof options.depends === "function") {
-    const depends = options.depends((payload) => {
+    const dependConfigs = options.depends((payload) => {
       const dependStores = {};
 
       payload.stores.forEach((storeKey) => {
         dependStores[storeKey] = stores[storeKey];
       });
 
-      return depend({
+      return {
         stores: dependStores,
         handler: payload.handler,
-      });
+        useName: payload.useName,
+      };
     });
 
-    const dependKeys = Object.keys(depends);
+    const dependConfigKeys = Object.keys(dependConfigs);
 
-    for (let index = 0; index < dependKeys.length; index += 1) {
-      const dependKey = dependKeys[index];
+    for (let index = 0; index < dependConfigKeys.length; index += 1) {
+      const dependConfigKey = dependConfigKeys[index];
+      const dependConfig = dependConfigs[dependConfigKey];
 
-      instance.depend[dependKey] = () => {
-        return attachDepend(depends[dependKey]);
+      instance.depend[dependConfigKey] = () => {
+        return attachDepend(depend({
+          stores: dependConfig.stores,
+          handler: dependConfig.handler,
+          name: dependConfig.useName ? dependConfigKey : undefined,
+        }));
       };
     }
   }

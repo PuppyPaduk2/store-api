@@ -1,6 +1,5 @@
 import { StoreShape, DependApi, DependApiHandlerResult } from "../depend";
 import { StoreInstance, StoreApiState, StoreApiApi } from "../store";
-import { ContextScope } from "../context";
 
 type DependShape<Stores extends StoreShape> = (
   depend: <
@@ -15,6 +14,7 @@ type DependShape<Stores extends StoreShape> = (
   >(payload: {
     stores: StoreNames[],
     handler: (stores: DependStores) => HandlerResult,
+    useName?: boolean;
   }) => DependApi<
     { [Key in StoreNames]: Stores[Key] },
     HandlerResult

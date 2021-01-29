@@ -32,3 +32,16 @@ test("create", () => {
   expect(defaultValues(config => config.stores.age)).toBeInstanceOf(Function);
   expect(defaultValues(config => config.handler)).toBeInstanceOf(Function);
 });
+
+test("use name in depend config", () => {
+  const defaultValues = depend({
+    name: "default-values",
+    stores: { name: stringApi, age: numberApi },
+    handler: ({ name, age }) => {
+      name.api.set("Bob");
+      age.api.inc();
+    },
+  });
+  
+  expect(defaultValues(({ name }) => name)).toBe("default-values");
+});
