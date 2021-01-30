@@ -207,7 +207,7 @@ function createDepend({ handler, name, state, used }) {
   const instance = {
     used: Boolean(used),
     handler: handlerWrapper,
-    handlerResult: state === undefined ? handlerResult : Promise.resolve(state),
+    handlerResult: Boolean(used) ? Promise.resolve(state) : handlerResult,
     originApi: null,
     name: name || null,
   };
@@ -221,12 +221,10 @@ function attachDepend(dependApi) {
   let depend = currentContext.depends.get(stores);
 
   if (depend === undefined) {
-    const dependState = currentContext.dependStates.get(name);
-
     depend = dependApi((config) => createDepend({
       handler: config.handler,
       name: config.name,
-      state: dependState,
+      state: currentContext.dependStates.get(name),
       used: currentContext.dependStates.has(name),
     }));
     depend.originApi = dependApi;
