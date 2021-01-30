@@ -35,8 +35,8 @@ test("create", () => {
 test("create with depends", () => {
   const capp = contract({ name: stringApi, age: numberApi }, {
     depends: (depend) => ({
-      defaultName: depend({ stores: ["name"], handler: ({ name }) => name.api.set("Bob") }),
-      defaultAge: depend({ stores: ["age"], handler: ({ age }) => age.api.set(10) }),
+      defaultName: depend({ use: ["name"], handler: ({ name }) => name.api.set("Bob") }),
+      defaultAge: depend({ use: ["age"], handler: ({ age }) => age.api.set(10) }),
     }),
   });
 
@@ -73,11 +73,11 @@ test("attach depend", async () => {
   }, {
     depends: (depend) => ({
       defaultName: depend({
-        stores: ["name"],
+        use: ["name"],
         handler: ({ name }) => name.api.set("Bob"),
       }),
       defaultAge: depend({
-        stores: ["age"],
+        use: ["age"],
         handler: ({ age }) => age.api.set(10),
       }),
     }),
@@ -97,6 +97,34 @@ test("attach depend", async () => {
   expect(await setAge).toBe(10);
 });
 
+test("attach double depend", () => {
+  const capp = contract({
+    name: stringApi,
+  }, {
+    depends: (depend) => ({
+      defName: depend({
+        handler: ({ name }) => {
+          if (name.getState() === "") {
+            name.api.set("Bob");
+          } else if (name.getState() === "Bob") {
+            name.api.set("Bob-next");
+          } else if (name.getState() === "Bob-next") {
+            name.api.set("Bob-next-next");
+          }
+          return name.getState();
+        }
+      }),
+    }),
+  });
+
+  const app = context();
+
+  app(capp.depend.defName);
+  app(capp.depend.defName);
+
+  expect(app(capp.store.name).getState()).toBe("Bob");
+});
+
 test("stores [all]", () => {
   const capp = contract({
     name: stringApi,
@@ -104,11 +132,11 @@ test("stores [all]", () => {
   }, {
     depends: (depend) => ({
       defaultName: depend({
-        stores: ["name"],
+        use: ["name"],
         handler: ({ name }) => name.api.set("Bob"),
       }),
       defaultAge: depend({
-        stores: ["age"],
+        use: ["age"],
         handler: ({ age }) => age.api.set(10),
       }),
     }),
@@ -148,11 +176,11 @@ test("depends [all]", async () => {
   }, {
     depends: (depend) => ({
       defaultName: depend({
-        stores: ["name"],
+        use: ["name"],
         handler: ({ name }) => name.api.set("Bob"),
       }),
       defaultAge: depend({
-        stores: ["age"],
+        use: ["age"],
         handler: ({ age }) => age.api.set(10),
       }),
     }),
@@ -175,11 +203,11 @@ test("depends [chunk]", async () => {
   }, {
     depends: (depend) => ({
       defaultName: depend({
-        stores: ["name"],
+        use: ["name"],
         handler: ({ name }) => name.api.set("Bob"),
       }),
       defaultAge: depend({
-        stores: ["age"],
+        use: ["age"],
         handler: ({ age }) => age.api.set(10),
       }),
     }),
@@ -196,6 +224,33 @@ test("depends [chunk]", async () => {
   expect(await defaultName).toBe("Bob");
 });
 
+test("depends double exec", () => {
+  const capp = contract({
+    name: stringApi,
+  }, {
+    depends: (depend) => ({
+      defName: depend({
+        handler: ({ name }) => {
+          if (name.getState() === "") {
+            name.api.set("Bob");
+          } else if (name.getState() === "Bob") {
+            name.api.set("Bob-next");
+          } else if (name.getState() === "Bob-next") {
+            name.api.set("Bob-next-next");
+          }
+          return name.getState();
+        }
+      }),
+    }),
+  });
+
+  const app = context();
+
+  app(capp.depends());
+  app(capp.depends());
+  expect(app(capp.store.name).getState()).toBe("Bob");
+});
+
 test("serialize / deserialize context", async () => {
   const capp = contract({
     name: stringApi,
@@ -203,7 +258,7 @@ test("serialize / deserialize context", async () => {
   }, {
     depends: (depend) => ({
       defaultName: depend({
-        stores: ["name"],
+        use: ["name"],
         handler: ({ name }) => {
           if (name.getState() === "Bob") {
             name.api.set("Bob-next");
@@ -216,7 +271,7 @@ test("serialize / deserialize context", async () => {
         useName: true,
       }),
       defaultAge: depend({
-        stores: ["age"],
+        use: ["age"],
         handler: ({ age }) => {
           if (age.getState() === 10) {
             age.api.set(100);

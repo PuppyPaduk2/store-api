@@ -27,20 +27,20 @@ const appContract = contract({
 }, {
   depends: (depend) => ({
     defaultName: depend({
-      stores: ["name"],
+      use: ["name"],
       handler: ({ name }) => {
         return name.api.set("Bob");
       },
     }),
     defaultAge: depend({
-      stores: ["age"],
+      use: ["age"],
       handler: ({ age }) => {
         return age.api.set(10);
       },
       useName: true,
     }),
     defaultToken: depend({
-      stores: ["token"],
+      use: ["token"],
       handler: ({ token }) => {
         return token.api.set("as23qzjaA2");
       },

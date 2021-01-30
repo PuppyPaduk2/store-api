@@ -21,9 +21,10 @@ function contract(stores, options) {
 
   if (options && typeof options.depends === "function") {
     const dependConfigs = options.depends((payload) => {
+      const use = payload.use || storeKeys;
       const dependStores = {};
 
-      payload.stores.forEach((storeKey) => {
+      use.forEach((storeKey) => {
         dependStores[storeKey] = stores[storeKey];
       });
 
@@ -39,13 +40,14 @@ function contract(stores, options) {
     for (let index = 0; index < dependConfigKeys.length; index += 1) {
       const dependConfigKey = dependConfigKeys[index];
       const dependConfig = dependConfigs[dependConfigKey];
+      const dependApi = depend({
+        stores: dependConfig.stores,
+        handler: dependConfig.handler,
+        name: dependConfig.useName ? dependConfigKey : undefined,
+      });
 
       instance.depend[dependConfigKey] = () => {
-        return attachDepend(depend({
-          stores: dependConfig.stores,
-          handler: dependConfig.handler,
-          name: dependConfig.useName ? dependConfigKey : undefined,
-        }));
+        return attachDepend(dependApi);
       };
     }
   }

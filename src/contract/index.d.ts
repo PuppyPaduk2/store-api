@@ -12,7 +12,7 @@ type DependShape<Stores extends StoreShape> = (
     },
     HandlerResult = void
   >(payload: {
-    stores: StoreNames[],
+    use: StoreNames[],
     handler: (stores: DependStores) => HandlerResult,
     useName?: boolean;
   }) => DependApi<
