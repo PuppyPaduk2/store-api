@@ -1,4 +1,4 @@
-import { store } from "../store";
+import { store, StoreInstanceByApi } from "../store";
 
 const stringApi = store({
   init: "",
@@ -20,3 +20,5 @@ const numberApi = store({
 
 const nameApi = stringApi(({ api }) => api);
 const ageApi = numberApi(({ api }) => api);
+
+type StringApi = StoreInstanceByApi<typeof stringApi>;

@@ -71,3 +71,8 @@ export type StoreInstance<
 export type StoreApiState<T> = T extends StoreApi<infer U, any> ? U : T;
 
 export type StoreApiApi<T> = T extends StoreApi<any, infer U> ? U : T;
+
+export type StoreInstanceByApi<T extends StoreApi<any, any>> = StoreInstance<
+  StoreApiState<T>,
+  StoreApiApi<T>
+>;
