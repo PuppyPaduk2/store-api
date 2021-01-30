@@ -1,5 +1,4 @@
 const { getStack } = require("../stack");
-const { store } = require("../store");
 
 function contextScope(instance) {
   const stack = getStack();
@@ -190,7 +189,7 @@ function attachStore(name, storeApi, state) {
   throw new Error("Store in current context uses other api");
 }
 
-function createDepend({ handler, name, state }) {
+function createDepend({ handler, name, state, used }) {
   let handlerResolve, handlerReject;
   const handlerResult = new Promise((resolve, reject) => {
     handlerResolve = resolve;
@@ -206,7 +205,7 @@ function createDepend({ handler, name, state }) {
     }
   };
   const instance = {
-    used: state === undefined ? false : true,
+    used: Boolean(used),
     handler: handlerWrapper,
     handlerResult: state === undefined ? handlerResult : Promise.resolve(state),
     originApi: null,
@@ -228,6 +227,7 @@ function attachDepend(dependApi) {
       handler: config.handler,
       name: config.name,
       state: dependState,
+      used: currentContext.dependStates.has(name),
     }));
     depend.originApi = dependApi;
     currentContext.depends.set(stores, depend);
