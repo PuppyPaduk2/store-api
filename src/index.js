@@ -7,8 +7,9 @@ const {
   deserializeContext,
 } = require("./context");
 const {
-  contract,
-} = require("./contract");
+  contractStores,
+  contractDepends,
+} = require("./contract/v2");
 const {
   depend,
 } = require("./depend");
@@ -23,7 +24,8 @@ module.exports = {
   attachDepend,
   serializeContext,
   deserializeContext,
-  contract,
+  contractStores,
+  contractDepends,
   depend,
   store,
 };

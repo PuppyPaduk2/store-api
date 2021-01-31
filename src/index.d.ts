@@ -8,8 +8,9 @@ export {
   ContextScope,
 } from "./context";
 export {
-  contract,
-} from "./contract";
+  contractStores,
+  contractDepends,
+} from "./contract/v2";
 export {
   depend,
 } from "./depend";
