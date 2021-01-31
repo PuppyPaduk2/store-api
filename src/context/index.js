@@ -155,23 +155,28 @@ function attachStore(name, storeApi, state) {
       const currentStoreApi = stores[name];
 
       if (
-        depend.used === false
-        && Boolean(currentStoreApi) === true
-        && currentStoreApi === storeApi
+        Boolean(currentStoreApi) === true &&
+        currentStoreApi === storeApi
       ) {
-        const storeKeys = Object.keys(stores);
-        const dependStores = {};
+        if (depend.used) {
+          depend.handlerResult.then((state) => {
+            store.setState(state);
+          });
+        } else {
+          const storeKeys = Object.keys(stores);
+          const dependStores = {};
 
-        depend.used = true;
-        currentContext.queueDependHandlers.push({
-          stores: dependStores,
-          handler: depend.handler,
-        });
+          depend.used = true;
+          currentContext.queueDependHandlers.push({
+            stores: dependStores,
+            handler: depend.handler,
+          });
 
-        for (let index = 0; index < storeKeys.length; index += 1) {
-          const storeKey = storeKeys[index];
+          for (let index = 0; index < storeKeys.length; index += 1) {
+            const storeKey = storeKeys[index];
 
-          dependStores[storeKey] = attachStore(storeKey, stores[storeKey]);
+            dependStores[storeKey] = attachStore(storeKey, stores[storeKey]);
+          }
         }
       }
     });
@@ -255,12 +260,15 @@ async function serializeContext(contextScope) {
     });
 
     const filteredDepends = Array.from(currentContext.depends.values())
-      .filter(({ name, used }) => Boolean(name) && used);
+      .filter(({ used }) => used);
 
     for (let index = 0; index < filteredDepends.length; index += 1) {
       const depend = filteredDepends[index];
+      const result = await depend.handlerResult;
 
-      data.depends[depend.name] = await depend.handlerResult;
+      if (depend.name) {
+        data.depends[depend.name] = result;
+      }
     }
   });
 
