@@ -163,21 +163,24 @@ function attachStore(name, storeApi, state) {
         const dependStores = {};
 
         depend.used = true;
+        currentContext.queueDependHandlers.push({
+          stores: dependStores,
+          handler: depend.handler,
+        });
 
         for (let index = 0; index < storeKeys.length; index += 1) {
           const storeKey = storeKeys[index];
 
           dependStores[storeKey] = attachStore(storeKey, stores[storeKey]);
         }
-
-        currentContext.queueDependHandlers.unshift({
-          stores: dependStores,
-          handler: depend.handler,
-        });
       }
     });
+
     if (currentContext.storeStack.length === 1) {
-      currentContext.queueDependHandlers.forEach(({ stores, handler }) => handler(stores));
+      currentContext.queueDependHandlers.forEach(({ stores, handler }) => {
+        handler(stores);
+      });
+      currentContext.queueDependHandlers = [];
     }
     currentContext.storeStack.shift();
   }
