@@ -2,13 +2,18 @@ export type ConfigApiMethod<Params extends Array<any>, Result = void> = (
   ...params: Params
 ) => Result | Promise<Result>;
 
-export type ConfigApi<State> = (payload: {
+export type ConfigApiMethodShape = {
+  [Key: string]: ConfigApiMethod<any, any>;
+};
+
+export type ConfigApi<
+  State,
+  Api extends ConfigApiMethodShape = ConfigApiMethodShape
+> = (payload: {
   getState: () => State;
   setState: (payload: State | ((prev: State) => State)) => State;
   reset: () => State;
-}) => {
-  [Key: string]: ConfigApiMethod<any, any>;
-};
+}) => Api;
 
 export type StoreConfig<State, Api extends ConfigApi<State>> = {
   init: State;
