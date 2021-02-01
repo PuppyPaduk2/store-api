@@ -39,11 +39,13 @@ function rootContext(callback) {
   return contextScope(rootContextInstance)(callback);
 }
 
-function createStore({ init, state, api }) {
+function createStore({ init, state, api, type }) {
+  const _type = typeof type === "function" ? type : () => true;
+  const _state = state === undefined ? init : state
   const instance = {
     init,
     api,
-    state: state === undefined ? init : state,
+    state: _type(_state) ? _state : init,
     listeners: { store: new Set(), api: {} },
     getState: () => {
       return instance.state;
@@ -58,14 +60,15 @@ function createStore({ init, state, api }) {
         nextState = state;
       }
 
-      if (prevState !== nextState) {
+      if (_type(nextState) && prevState !== nextState) {
         instance.state = nextState;
         instance.listeners.store.forEach((listener) => {
           listener(nextState);
         });
+        return nextState;
       }
 
-      return nextState;
+      return prevState;
     },
     reset: () => {
       return instance.setState(instance.init);
@@ -147,6 +150,7 @@ function attachStore(name, storeApi, state) {
       init: config.init,
       api: config.api,
       state: storeState === undefined ? state : storeState,
+      type: config.type,
     }));
     store.originApi = storeApi;
     currentContext.stores.set(name, store);

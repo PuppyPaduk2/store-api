@@ -18,6 +18,15 @@ const numberApi = store({
   }),
 });
 
+const userApi = store({
+  init: { name: "", age: 0 },
+  api: ({ getState, setState }) => ({
+    setName: (name: string) => setState({ ...getState(), name }),
+    setAge: (age: number) => setState({ ...getState(), age }),
+  }),
+  type: ({ name, age }) => typeof name === "string" && typeof age === "number",
+});
+
 const nameApi = stringApi(({ api }) => api);
 const ageApi = numberApi(({ api }) => api);
 

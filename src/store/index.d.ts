@@ -18,6 +18,7 @@ export type ConfigApi<
 export type StoreConfig<State, Api extends ConfigApi<State>> = {
   init: State;
   api: Api;
+  type?: (nextState: State) => boolean;
 };
 
 export type StoreApi<State, Api extends ConfigApi<State>> = <Result = void>(

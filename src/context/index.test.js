@@ -29,6 +29,20 @@ const stringApi = store({
   }),
 });
 
+const userApi = store({
+  init: { name: "", age: 0 },
+  api: ({ getState, setState }) => ({
+    set: (user) => setState(user),
+    setName: (name) => setState({ ...getState(), name }),
+    setAge: (age) => setState({ ...getState(), age }),
+  }),
+  type: (value) => {
+    return typeof value === "object" &&
+      typeof value.name === "string" &&
+      typeof value.age === "number";
+  },
+});
+
 const dependStores = { name: stringApi, age: numberApi }
 
 const defaultValuesBob = depend({
@@ -295,5 +309,19 @@ test("deserializeContext [with depends]", async () => {
     attachDepend(defaultToken);
 
     expect(attachStore("name", stringApi).getState()).toBe("Alise");
+  });
+});
+
+test("check type store", () => {
+  const app = context();
+
+  app(() => {
+    expect(attachStore("user", userApi, "123").getState()).toEqual({ name: "", age: 0 });
+    expect(attachStore("user", userApi).api.set(123)).toEqual({ name: "", age: 0 });
+    expect(attachStore("user", userApi).api.setName(123)).toEqual({ name: "", age: 0 });
+    expect(attachStore("user", userApi).api.setAge("123")).toEqual({ name: "", age: 0 });
+    expect(attachStore("user", userApi).api.set({ name: "bob", age: 10 })).toEqual({ name: "bob", age: 10 });
+    expect(attachStore("user", userApi).api.setName("alise")).toEqual({ name: "alise", age: 10 });
+    expect(attachStore("user", userApi).api.setAge(20)).toEqual({ name: "alise", age: 20 });
   });
 });

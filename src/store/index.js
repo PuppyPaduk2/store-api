@@ -1,5 +1,5 @@
-function store({ init, api }) {
-  const config = { init, api };
+function store({ init, api, type }) {
+  const config = { init, api, type };
 
   Object.freeze(config);
 
